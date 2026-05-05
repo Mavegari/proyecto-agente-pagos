@@ -7,23 +7,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const { productId, planName } = await req.json()
+    const { productId, planName, dietaryPrefs } = await req.json() // <-- Recibimos dietaryPrefs
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: productId, // Aquí pasamos el ID del producto (o precio) de Stripe
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: productId, quantity: 1 }],
       mode: 'payment',
-      // Metadata es vital: aquí es donde guardas los datos que el Webhook leerá después
       metadata: {
         plan_name: planName,
-        dietary_preferences: 'Ninguna', // Esto lo podrías capturar de un formulario
+        dietary_preferences: dietaryPrefs, // <-- Se guarda en Stripe
       },
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.get('origin')}/success`,
       cancel_url: `${req.headers.get('origin')}/`,
     })
 
