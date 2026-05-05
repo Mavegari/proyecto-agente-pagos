@@ -1,14 +1,15 @@
+// proxy.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+// 1. Cambiamos 'middleware' por 'proxy'
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
-  // 1. Configurar el cliente de Supabase para el Middleware
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -29,23 +30,12 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 2. Obtener la sesión del usuario
-  const { data: { user } } = await supabase.auth.getUser()
+  await supabase.auth.getUser()
 
-  // 3. Lógica de "Gatekeeper" (Protección de rutas)
-  const isAcademyRoute = request.nextUrl.pathname.startsWith('/academy')
-
-  if (isAcademyRoute && !user) {
-    // Si intenta entrar a la academia sin estar logueado
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // Aquí es donde en el futuro consultaremos el 'plan_type' en la base de datos
-  // Por ahora, dejamos el camino libre si hay usuario
   return response
 }
 
-// Configurar en qué rutas se ejecuta el middleware
+// El matcher se queda exactamente igual
 export const config = {
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
