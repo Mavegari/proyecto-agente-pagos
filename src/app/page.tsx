@@ -6,6 +6,9 @@ import Link from 'next/link'
 export default function Home() {
   const [loading, setLoading] = useState<string | null>(null)
   const [hasAllergies, setHasAllergies] = useState(false)
+  
+  // 1. NUEVO ESTADO: Para guardar lo que el usuario escribe
+  const [dietaryDetails, setDietaryDetails] = useState('')
 
   const handlePurchase = async (priceId: string, planName: string) => {
     setLoading(priceId)
@@ -16,7 +19,8 @@ export default function Home() {
         body: JSON.stringify({ 
           productId: priceId, 
           planName: planName,
-          dietaryPrefs: hasAllergies ? 'El usuario indica tener alergias o preferencias' : 'Ninguna' 
+          // 2. LÓGICA ACTUALIZADA: Enviamos el texto del usuario si el checkbox está marcado
+          dietaryPrefs: hasAllergies ? dietaryDetails : 'Ninguna' 
         }),
       })
 
@@ -72,7 +76,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 3. PLANES (CON CHECKBOX) */}
+      {/* 3. PLANES */}
       <section id="pricing" className="py-24 px-6 bg-[#F3F2EF]">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
           {plans.map(p => (
@@ -81,17 +85,29 @@ export default function Home() {
               <div className="text-5xl font-bold mb-6 font-serif">{p.price}</div>
               <p className="text-slate-500 text-sm mb-8 font-light">{p.desc}</p>
 
-              {/* CHECKBOX AÑADIDO */}
-              <label className="flex items-center space-x-2 mb-8 cursor-pointer group">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
-                  onChange={(e) => setHasAllergies(e.target.checked)}
-                />
-                <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400 group-hover:text-amber-600 transition">
-                  ¿Tengo alergias o preferencias?
-                </span>
-              </label>
+              {/* 3. BLOQUE DE ALERGIAS INTEGRADO */}
+              <div className="w-full mb-8 text-center">
+                <label className="flex items-center justify-center space-x-2 cursor-pointer group">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                    onChange={(e) => setHasAllergies(e.target.checked)}
+                  />
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400 group-hover:text-amber-600 transition">
+                    ¿Tengo alergias o preferencias?
+                  </span>
+                </label>
+
+                {/* TEXTAREA CONDICIONAL: Solo aparece si el checkbox está marcado */}
+                {hasAllergies && (
+                  <textarea
+                    className="mt-4 w-full p-4 rounded-xl border border-slate-200 bg-white text-xs focus:ring-1 focus:ring-amber-500 outline-none transition-all shadow-inner"
+                    placeholder="Ej: Alergia a los frutos secos, soy vegano o no me gusta el picante..."
+                    rows={3}
+                    onChange={(e) => setDietaryDetails(e.target.value)}
+                  />
+                )}
+              </div>
 
               <button 
                 onClick={() => handlePurchase(p.id, p.name)}

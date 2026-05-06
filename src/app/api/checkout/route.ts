@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{ price: productId, quantity: 1 }],
-      mode: 'payment',
+      mode: 'subscription',
       metadata: {
         plan_name: planName,
         dietary_preferences: dietaryPrefs, // <-- Se guarda en Stripe
